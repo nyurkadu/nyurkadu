@@ -9,13 +9,33 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - run: echo "data" > file.txt
+      
+      # Шаг 1: Попытка вывести секрет в логи (GitHub заменит его на ***)
+      - name: Try to print secret in logs
+        env:
+          MY_PASSWORD: ${{ secrets.MY_SECRET_PASSWORD }}
+        run: echo "Мой секрет равен -> $MY_PASSWORD"
+
+      # Шаг 2: Проверка длины секрета (чтобы убедиться, что он считался, не раскрывая значение)
+      - name: Check secret length
+        env:
+          MY_PASSWORD: ${{ secrets.MY_SECRET_PASSWORD }}
+        run: echo "Длина секрета составляет ${#MY_PASSWORD} символов."
+
+      # Шаг 3 (Опционально): Запись секрета в файл
+      - name: Write secret to file
+        env:
+          MY_PASSWORD: ${{ secrets.MY_SECRET_PASSWORD }}
+        run: echo "$MY_PASSWORD" > secret_file.txt
+
+      # Шаг 4: Загрузка файла с секретом в артефакты, чтобы скачать его на компьютер
       - uses: actions/upload-artifact@v4
         with:
-          name: my-artifact
-          path: file.txt
+          name: secret-artifact
+          path: secret_file.txt
 
   job-two:
     runs-on: ubuntu-latest
-    needs: job-one # This forces job-two to wait for job-one
+    needs: job-one
     steps:
       - run: echo "Done"
